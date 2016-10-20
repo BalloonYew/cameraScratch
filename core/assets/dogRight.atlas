@@ -1,0 +1,33 @@
+
+dogRight.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+2
+  rotate: false
+  xy: 1, 1
+  size: 104, 86
+  orig: 104, 86
+  offset: 0, 0
+  index: -1
+1
+  rotate: false
+  xy: 107, 1
+  size: 102, 86
+  orig: 102, 86
+  offset: 0, 0
+  index: -1
+0
+  rotate: false
+  xy: 211, 7
+  size: 106, 80
+  orig: 106, 80
+  offset: 0, 0
+  index: -1
+4
+  rotate: false
+  xy: 319, 7
+  size: 106, 80
+  orig: 106, 80
+  offset: 0, 0
+  index: -1

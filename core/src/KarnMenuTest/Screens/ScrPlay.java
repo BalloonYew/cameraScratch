@@ -12,20 +12,23 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import KarnMenuTest.GdxMenu;
 import KarnMenuTest.TbMenu;
 import KarnMenuTest.TbsMenu;
+import KarnMenuTest.Screens.BlockClass;
+import KarnMenuTest.Screens.EnemyClass;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector3;
+import java.util.ArrayList;
 
 /**
  * Created by Luke on 2016-04-05.
  */
-public class ScrPlay implements Screen {
 
+public class ScrPlay implements Screen {
+    BlockClass bBlock;
+     EnemyClass Enemy;
+    ArrayList[] alBlocks; 
     GdxMenu gdxMenu;
     TbsMenu tbsMenu;
     TbMenu tbMenu, tbGameover;
@@ -33,37 +36,33 @@ public class ScrPlay implements Screen {
     SpriteBatch batch;
     BitmapFont screenName;
     CharClass charSonic = new CharClass();
-    Sprite sprSonic;
+    EnemyClass charEnemy = new EnemyClass();
     Animation[] aniChar;
     private float elapsedTime = 0;
-    Texture imgFloor, imgBack, imgBlock;
-    int nJum, nDir = 0, nAniCurr, backX;
-    float fSY, fSX, fBX = 50, fBY = 30, fX, fY, tempX;
+    Texture imgFloor, imgBack, imgBlock,imgDog;
+    int nJum, nDir = 0, nAniCurr,nDir2=0;
+    float fSY, fSX, fBX=50, fBY=50, fX, fY, fBackX, fDist;
     double dGravity, dSpeed;
     Vector2 vSonic;
-    OrthographicCamera camera;
-
+    boolean bPass=false;
     public ScrPlay(GdxMenu _gdxMenu) {  //Referencing the main class.
         gdxMenu = _gdxMenu;
     }
 
     public void show() {
-        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
-        camera.zoom = 21;
-        camera.update();
         batch = new SpriteBatch();
-        imgBack = new Texture(Gdx.files.internal("back.jpg"));
+        imgDog = new Texture(Gdx.files.internal("dog.png"));
+        imgBack = new Texture(Gdx.files.internal("background.png"));
         imgFloor = new Texture(Gdx.files.internal("background1.png"));
         imgBlock = new Texture(Gdx.files.internal("block.png"));
-        charSonic.charMain("Sonic");
+        charSonic.charMain("Sonic", "UP", "DOWN", "LEFT", "RIGHT");
+        charEnemy.show();
         stage = new Stage();
         tbsMenu = new TbsMenu();
         tbMenu = new TbMenu("BACK", tbsMenu);
         tbGameover = new TbMenu("GAMEOVER", tbsMenu);
         tbMenu.setY(0);
         tbMenu.setX(0);
-
         tbGameover.setY(0);
         tbGameover.setX(440);
         stage.addActor(tbMenu);
@@ -71,71 +70,45 @@ public class ScrPlay implements Screen {
         Gdx.input.setInputProcessor(stage);
         btnMenuListener();
         btnGameoverListener();
-
-
     }
 
+    @Override
     public void render(float delta) {
         charSonic.update();
-
-        batch.setProjectionMatrix(camera.combined);
+         charEnemy.update();
         batch.begin();
-        tempX = charSonic.x;
-
         elapsedTime += Gdx.graphics.getDeltaTime();
-        batch.draw(imgBack, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        batch.draw(imgBack, 0 + Gdx.graphics.getWidth(), 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        batch.draw(imgBack, 0 - Gdx.graphics.getWidth(), 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        batch.draw(imgFloor, backX, 0, Gdx.graphics.getWidth() - 30, 40);
-        batch.draw(imgFloor, backX + Gdx.graphics.getWidth(), 0, Gdx.graphics.getWidth() - 30, 40);
-        batch.draw(imgFloor, backX - Gdx.graphics.getWidth(), 0, Gdx.graphics.getWidth() - 30, 40);
-
-        batch.draw(imgBlock, fBX, fBY, 30, 30);
+        batch.draw(imgBack, fBackX, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.draw(imgBack, fBackX-Gdx.graphics.getWidth(), 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.draw(imgBack, fBackX+Gdx.graphics.getWidth(), 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        if((fBackX < -Gdx.graphics.getWidth() || fBackX > Gdx.graphics.getWidth())){
+            fBackX=0;
+        }
+        batch.draw(imgFloor, fBackX, 0, Gdx.graphics.getWidth(), 40);
+        batch.draw(imgFloor, fBackX-Gdx.graphics.getWidth(), 0, Gdx.graphics.getWidth(), 40);
+        batch.draw(imgFloor, fBackX+Gdx.graphics.getWidth(), 0, Gdx.graphics.getWidth(), 40);
+        //batch.draw(imgBlock, fBX, fBY, 30, 30);
         nDir = charSonic.Direction();
-        batch.draw(charSonic.aniSonic[nDir].getKeyFrame(elapsedTime, true), charSonic.x, charSonic.y);
-
-
-        //camera.setPosition(charSonic.x, charSonic.y);
-
-        System.out.println("camera zoom "+ camera.zoom);
-
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            camera.translate(-2, 0);
-            camera.update();
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            camera.translate(2, 0);
-            camera.update();
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-            camera.rotate(-2);
-            camera.update();
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            camera.zoom += 0.02;
-            camera.update();
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
-            camera.zoom -= 0.02;
-            camera.update();
-        }
- camera.zoom = MathUtils.clamp(camera.zoom, 0.01f, 21f);
-
-      //  float effectiveViewportWidth = camera.viewportWidth * camera.zoom;
-       // float effectiveViewportHeight = camera.viewportHeight * camera.zoom;
-
+        
+         nDir2 = charEnemy.Direction2();
+         
+        batch.draw(charSonic.aniChar[nDir].getKeyFrame(elapsedTime, true), charSonic.vChar.x, charSonic.vChar.y);
+       
+        batch.draw(charEnemy.aniBad[nDir2].getKeyFrame(elapsedTime, true), charEnemy.vBad.x, 30 ,50,40);
+        
         batch.end();
-//    
-//  if ( tempX <= 50) {
-//            backX ++;
-//            fBX ++;
-//        }
-//  if ( tempX >= 400) {
-//            backX --;
-//            fBX --;
-//        }
-
+        
+        System.out.println(fDist);
+        if(fDist > 0) {
+            fBackX -= charSonic.fSx;
+        } else if (fDist<0) {
+            charSonic.fSx = 0;
+            fDist = 0;
+        }
+            fDist += charSonic.fSx;
+        
+            
+            
     }
 
     public void btnGameoverListener() {
@@ -158,24 +131,27 @@ public class ScrPlay implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        camera.viewportWidth = 30f;
-        camera.viewportHeight = 30f * height / width;
-        camera.update();
+
     }
 
     @Override
     public void pause() {
+
     }
 
     @Override
     public void resume() {
+
     }
 
     @Override
     public void hide() {
+
     }
 
     @Override
     public void dispose() {
+
     }
 }
+    
